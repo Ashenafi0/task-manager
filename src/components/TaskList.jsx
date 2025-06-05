@@ -9,10 +9,22 @@ const TaskList = () => {
   const [newTask, setNewTask] = useState('');
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [taskToDelete, setTaskToDelete] = useState(null);
+  const [filter, setFilter] = useState('all'); // 'all', 'active', 'completed'
+  const [error, setError] = useState('');
 
   const addTask = (e) => {
     e.preventDefault();
-    if (newTask.trim() === '') return;
+    setError('');
+
+    if (newTask.trim() === '') {
+      setError('Task title cannot be empty');
+      return;
+    }
+
+    if (newTask.length > 100) {
+      setError('Task title cannot be longer than 100 characters');
+      return;
+    }
     
     const task = {
       id: Date.now(),
@@ -48,6 +60,15 @@ const TaskList = () => {
     setTaskToDelete(null);
   };
 
+  const filteredTasks = tasks.filter(task => {
+    if (filter === 'active') return !task.completed;
+    if (filter === 'completed') return task.completed;
+    return true;
+  });
+
+  const completedCount = tasks.filter(t => t.completed).length;
+  const activeCount = tasks.length - completedCount;
+
   return (
     <div className="max-w-2xl mx-auto mt-10 p-8 bg-white/80 backdrop-blur-lg rounded-2xl shadow-xl">
       <div className="text-center mb-8">
@@ -71,30 +92,78 @@ const TaskList = () => {
       </div>
       
       <form onSubmit={addTask} className="mb-8">
-        <div className="flex gap-3">
-          <input
-            type="text"
-            value={newTask}
-            onChange={(e) => setNewTask(e.target.value)}
-            placeholder="What needs to be done?"
-            className="flex-1 px-6 py-3 text-lg border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-400 transition-colors shadow-sm"
-          />
-          <button
-            type="submit"
-            className="px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white text-lg font-semibold rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
-          >
-            Add Task
-          </button>
+        <div className="flex flex-col gap-3">
+          <div className="flex gap-3">
+            <input
+              type="text"
+              value={newTask}
+              onChange={(e) => {
+                setNewTask(e.target.value);
+                setError('');
+              }}
+              placeholder="What needs to be done?"
+              className={`flex-1 px-6 py-3 text-lg border-2 rounded-xl focus:outline-none transition-colors shadow-sm ${
+                error ? 'border-red-500' : 'border-gray-200 focus:border-blue-400'
+              }`}
+            />
+            <button
+              type="submit"
+              className="px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white text-lg font-semibold rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+            >
+              Add Task
+            </button>
+          </div>
+          {error && (
+            <p className="text-red-500 text-sm mt-1">{error}</p>
+          )}
         </div>
       </form>
 
+      {/* Filter Buttons */}
+      <div className="flex justify-center gap-4 mb-6">
+        <button
+          onClick={() => setFilter('all')}
+          className={`px-4 py-2 rounded-lg transition-colors ${
+            filter === 'all'
+              ? 'bg-blue-500 text-white'
+              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+          }`}
+        >
+          All ({tasks.length})
+        </button>
+        <button
+          onClick={() => setFilter('active')}
+          className={`px-4 py-2 rounded-lg transition-colors ${
+            filter === 'active'
+              ? 'bg-blue-500 text-white'
+              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+          }`}
+        >
+          Active ({activeCount})
+        </button>
+        <button
+          onClick={() => setFilter('completed')}
+          className={`px-4 py-2 rounded-lg transition-colors ${
+            filter === 'completed'
+              ? 'bg-blue-500 text-white'
+              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+          }`}
+        >
+          Completed ({completedCount})
+        </button>
+      </div>
+
       <div className="space-y-4">
-        {tasks.length === 0 ? (
+        {filteredTasks.length === 0 ? (
           <div className="text-center py-8 text-gray-500">
-            No tasks yet. Add one above!
+            {filter === 'all'
+              ? 'No tasks yet. Add one above!'
+              : filter === 'active'
+              ? 'No active tasks'
+              : 'No completed tasks'}
           </div>
         ) : (
-          tasks.map(task => (
+          filteredTasks.map(task => (
             <div
               key={task.id}
               className={`group flex items-center justify-between p-4 bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-300 ${
@@ -160,7 +229,7 @@ const TaskList = () => {
       </div>
 
       <div className="mt-6 text-center text-sm text-gray-500">
-        {tasks.filter(t => t.completed).length} of {tasks.length} tasks completed
+        {completedCount} of {tasks.length} tasks completed
       </div>
 
       <DeleteConfirmationModal

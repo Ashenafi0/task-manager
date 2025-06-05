@@ -30,7 +30,7 @@ A modern, responsive task management application built with React and Tailwind C
 
 1. Clone the repository:
 ```bash
-git clone <repository-url>
+git clone https://github.com/Ashenafi0/task-manager
 cd task-manager
 ```
 
@@ -87,16 +87,6 @@ task-manager/
 - Option to cancel or confirm deletion
 - Semi-transparent overlay with blur effect
 
-## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
 
-## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Acknowledgments
-
-- Built with [React](https://reactjs.org/)
-- Styled with [Tailwind CSS](https://tailwindcss.com/)
-- Icons from [Heroicons](https://heroicons.com/)
